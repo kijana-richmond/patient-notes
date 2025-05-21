@@ -21,13 +21,13 @@ CORS(app, origins=['http://localhost:5173'])
 @app.route('/patients', methods=['GET'])
 def get_patients():
     app.logger.info('Fetching all patients')
-    patients = Patient.query.all()
+    patients = db.session.execute(db.select(Patient)).scalars().all()
     return jsonify([patient.to_dict() for patient in patients])
 
 @app.route('/patients/<patient_id>', methods=['GET'])
 def get_patient(patient_id):
     app.logger.info(f'Fetching patient with ID: {patient_id}')
-    patient = Patient.query.get(patient_id)
+    patient = db.session.execute(db.select(Patient).filter_by(id=patient_id)).scalar_one_or_none()
     if patient is None:
         app.logger.warning(f'Patient not found with ID: {patient_id}')
         return jsonify({'error': 'Patient not found'}), 404
@@ -56,7 +56,7 @@ def create_patient():
 def update_patient(patient_id):
     app.logger.info(f'Updating patient with ID: {patient_id}')
     data = request.json
-    patient = Patient.query.get(patient_id)
+    patient = db.session.execute(db.select(Patient).filter_by(id=patient_id)).scalar_one_or_none()
     if patient is None:
         app.logger.warning(f'Patient not found with ID: {patient_id}')
         return jsonify({'error': 'Patient not found'}), 404
@@ -75,7 +75,7 @@ def update_patient(patient_id):
 @app.route('/patients/<patient_id>', methods=['DELETE'])
 def delete_patient(patient_id):
     app.logger.info(f'Deleting patient with ID: {patient_id}')
-    patient = Patient.query.get(patient_id)
+    patient = db.session.execute(db.select(Patient).filter_by(id=patient_id)).scalar_one_or_none()
     if patient is None:
         app.logger.warning(f'Patient not found with ID: {patient_id}')
         return jsonify({'error': 'Patient not found'}), 404
@@ -94,13 +94,13 @@ def delete_patient(patient_id):
 @app.route('/notes', methods=['GET'])
 def get_notes():
     app.logger.info('Fetching all notes')
-    notes = Note.query.all()
+    notes = db.session.execute(db.select(Note)).scalars().all()
     return jsonify([note.to_dict() for note in notes])
 
 @app.route('/notes/<note_id>', methods=['GET'])
 def get_note(note_id):
     app.logger.info(f'Fetching note with ID: {note_id}')
-    note = Note.query.get(note_id)
+    note = db.session.execute(db.select(Note).filter_by(id=note_id)).scalar_one_or_none()
     if note is None:
         app.logger.warning(f'Note not found with ID: {note_id}')
         return jsonify({'error': 'Note not found'}), 404
@@ -109,7 +109,7 @@ def get_note(note_id):
 @app.route('/patients/<patient_id>/notes', methods=['GET'])
 def get_patient_notes(patient_id):
     app.logger.info(f'Fetching notes for patient ID: {patient_id}')
-    notes = Note.query.filter_by(patient_id=patient_id).all()
+    notes = db.session.execute(db.select(Note).filter_by(patient_id=patient_id)).scalars().all()
     return jsonify([note.to_dict() for note in notes])
 
 @app.route('/patients/<patient_id>/notes', methods=['POST'])
@@ -134,7 +134,7 @@ def create_note(patient_id):
 def update_note(note_id):
     app.logger.info(f'Updating note with ID: {note_id}')
     data = request.json
-    note = Note.query.get(note_id)
+    note = db.session.execute(db.select(Note).filter_by(id=note_id)).scalar_one_or_none()
     if note is None:
         app.logger.warning(f'Note not found with ID: {note_id}')
         return jsonify({'error': 'Note not found'}), 404
@@ -151,7 +151,7 @@ def update_note(note_id):
 @app.route('/notes/<note_id>', methods=['DELETE'])
 def delete_note(note_id):
     app.logger.info(f'Deleting note with ID: {note_id}')
-    note = Note.query.get(note_id)
+    note = db.session.execute(db.select(Note).filter_by(id=note_id)).scalar_one_or_none()
     if note is None:
         app.logger.warning(f'Note not found with ID: {note_id}')
         return jsonify({'error': 'Note not found'}), 404
